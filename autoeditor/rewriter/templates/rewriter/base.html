@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rewriter</title>
+</head>
+<body>
+    Sentences in text:
+    {% for sentence in sentences_in_text %}
+         <li>{{ sentence }}</li>
+    {% endfor %}
+    Rare words:
+    {% for word in rare_words %}
+         <li>{{ word }}</li>
+    {% endfor %}
+
+    <input type="text">{{ original_words }}</input>
+    <div id="content">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>
