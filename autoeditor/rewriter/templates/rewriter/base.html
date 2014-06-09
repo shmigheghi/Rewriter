@@ -4,22 +4,34 @@
     <title>Rewriter</title>
 </head>
 <body>
+    {% if sentences_in_text %}
+    <p>
     Sentences in text:
     {% for sentence in sentences_in_text %}
          <li>{{ sentence }}</li>
     {% endfor %}
+    </p>
+    {% endif %}
+    {% if not sentences_in_text %}
     Rare words:
-    {% for word in rare_words %}
-         <li>{{ word }}</li>
+    {% for rword in rare_words %}
+         <li>{{ rword }}</li>
     {% endfor %}
+    <p>
     Unknown words:
-    {% for word in unknown_words %}
-         <li>{{ word }}</li>
+    {% for uword in unknown_words %}
+         <li>{{ uword }}</li>
     {% endfor %}
+    </p>
+    {% endif %}
+    <p>
     <form action="" method="POST">
         {% csrf_token %}
+    <input type="radio" name="operation" value="rareWords"{% if not sentences_in_text %} checked{% endif %}>Rare Words<br>
+    <input type="radio" name="operation" value="highlightSentences"{% if sentences_in_text %} checked{% endif %}>Highlight Sentences<br>
     <textarea cols="80" rows="20" name="text">{{ original_text }}</textarea>
     <input type="submit" value="Analyze" />
     </form>
+    </p>
 </body>
 </html>

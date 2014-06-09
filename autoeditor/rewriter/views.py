@@ -59,15 +59,16 @@ class Rewriter:
         return wordFrequencyArray
 
     def wordsInText(self, text):
+        text = text.replace(".", "")
         return text.split(" ")
+
+    def syllableCountEstimateForWord(self, word):
+        return 0
 
 # Per-sentence operations
 
     def sentencesInText(self, text):
         return text.split(".")
-
-    def syllableCountEstimateForWord(self, word):
-        return 0
 
 # High-level calculations
 
@@ -91,21 +92,39 @@ def index(request):
 def runrewriter(request):
     template = loader.get_template('rewriter/base.html')
     rewr = Rewriter()
-
     text = ""
     if (request.POST):
         text = request.POST['text']
+        sentences_in_text = []
+        rare_words = []
+        unknown_words = []
+        if (request.POST['operation'] == "rareWords"):
+            rare_words, unknown_words = Rewriter.analyzeWordRarityInText(rewr, text)
+            print("Rare Words")
 
-    if len(text) <= 0:
-        text = 'This is default text. The following comes from an email exchange between myself and John Barnes, whose story I critiqued and who has given permission to reprint the exchange. I know that this question often comes up for newer writers. They see writers who write long, elaborate sentences and wonder why they then get criticized for overly long and complicated sentences. '
+        elif (request.POST['operation'] == "highlightSentences"):
+            sentences_in_text = Rewriter.sentencesInText(rewr, text)
+            print("Highlight Sentences")
+        else:
+            print("None of these")
 
-    rare_words, unknown_words = Rewriter.analyzeWordRarityInText(rewr, text)
-    sentences_in_text = Rewriter.sentencesInText(rewr, text)
+        context = RequestContext(request, {
+            'sentences_in_text': sentences_in_text,
+            'rare_words': rare_words,
+            'unknown_words': unknown_words,
+            'original_text': text
+        })
+    else :
+        # No text / initial load of page
 
-    context = RequestContext(request, {
-        'sentences_in_text': sentences_in_text,
-        'rare_words': rare_words,
-        'unknown_words': unknown_words,
-        'original_text': text
-    })
+        if len(text) <= 0:
+            text = 'This is default text. The following comes from an email exchange between myself and John Barnes, whose story I critiqued and who has given permission to reprint the exchange. I know that this question often comes up for newer writers. They see writers who write long, elaborate sentences and wonder why they then get criticized for overly long and complicated sentences. '
+
+        context = RequestContext(request, {
+            'sentences_in_text': [],
+            'rare_words': [],
+            'unknown_words': [],
+            'original_text': text
+        })
+
     return HttpResponse(template.render(context));
