@@ -12,6 +12,10 @@
     {% for word in rare_words %}
          <li>{{ word }}</li>
     {% endfor %}
+    Unknown words:
+    {% for word in unknown_words %}
+         <li>{{ word }}</li>
+    {% endfor %}
     <form action="" method="POST">
         {% csrf_token %}
     <textarea cols="80" rows="20" name="text">{{ original_text }}</textarea>

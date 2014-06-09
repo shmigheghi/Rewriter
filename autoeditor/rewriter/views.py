@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from django.http import HttpResponse
-from django.template import RequestContext, loader
-
 import re
 import string
 import os
+
+from django.http import HttpResponse
+from django.template import RequestContext, loader
+
 
 class Rewriter:
 
@@ -39,12 +40,15 @@ class Rewriter:
             index = -1
         return index
 
-    def rareWords(self, wordArray, wordFrequencyArray):
+    def getRareWords(self, wordArray, wordFrequencyArray):
         rareWords = []
+        unknownWords = []
         for index, wordFrequencyValue in enumerate(wordFrequencyArray):
-            if wordFrequencyValue > self.rareWordCutoff or wordFrequencyValue == -1:
+            if wordFrequencyValue > self.rareWordCutoff and wordFrequencyValue > -1:
                 rareWords.append(wordArray[index])
-        return rareWords
+            elif wordFrequencyValue == -1:
+                unknownWords.append(wordArray[index])
+        return rareWords, unknownWords
 
     def frequencyArrayOfWords(self, words):
         wordFrequencyArray = []
@@ -67,7 +71,7 @@ class Rewriter:
 
 # High-level calculations
 
-    def showRareWordsInText(self, words):
+    def analyzeWordRarityInText(self, words):
         # Clean up input
         cleanedInput = self.cleanedInput(words)
         wordArray = self.wordsInText(cleanedInput)
@@ -76,9 +80,9 @@ class Rewriter:
         wordFrequencyArray = self.frequencyArrayOfWords(wordArray)
 
         # Calculate rare words
-        rareWords = self.rareWords(wordArray, wordFrequencyArray)
+        rareWords, unknownWords = self.getRareWords(wordArray, wordFrequencyArray)
 
-        return rareWords
+        return rareWords, unknownWords
 
 
 def index(request):
@@ -95,12 +99,13 @@ def runrewriter(request):
     if len(text) <= 0:
         text = 'This is default text. The following comes from an email exchange between myself and John Barnes, whose story I critiqued and who has given permission to reprint the exchange. I know that this question often comes up for newer writers. They see writers who write long, elaborate sentences and wonder why they then get criticized for overly long and complicated sentences. '
 
-    rare_words = Rewriter.showRareWordsInText(rewr, text)
+    rare_words, unknown_words = Rewriter.analyzeWordRarityInText(rewr, text)
     sentences_in_text = Rewriter.sentencesInText(rewr, text)
 
     context = RequestContext(request, {
         'sentences_in_text': sentences_in_text,
         'rare_words': rare_words,
+        'unknown_words': unknown_words,
         'original_text': text
     })
     return HttpResponse(template.render(context));
