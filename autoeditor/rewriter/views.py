@@ -41,7 +41,6 @@ class Rewriter:
 
     def rareWords(self, wordArray, wordFrequencyArray):
         rareWords = []
-        print(wordFrequencyArray)
         for index, wordFrequencyValue in enumerate(wordFrequencyArray):
             if wordFrequencyValue > self.rareWordCutoff or wordFrequencyValue == -1:
                 rareWords.append(wordArray[index])
@@ -79,7 +78,6 @@ class Rewriter:
         # Calculate rare words
         rareWords = self.rareWords(wordArray, wordFrequencyArray)
 
-        print('Rare words in %s:' % words)
         return rareWords
 
 
@@ -90,7 +88,12 @@ def runrewriter(request):
     template = loader.get_template('rewriter/base.html')
     rewr = Rewriter()
 
-    text = 'The following comes from an email exchange between myself and John Barnes, whose story I critiqued and who has given permission to reprint the exchange. I know that this question often comes up for newer writers. They see writers who write long, elaborate sentences and wonder why they then get criticized for overly long and complicated sentences. '
+    text = ""
+    if (request.POST):
+        text = request.POST['text']
+
+    if len(text) <= 0:
+        text = 'This is default text. The following comes from an email exchange between myself and John Barnes, whose story I critiqued and who has given permission to reprint the exchange. I know that this question often comes up for newer writers. They see writers who write long, elaborate sentences and wonder why they then get criticized for overly long and complicated sentences. '
 
     rare_words = Rewriter.showRareWordsInText(rewr, text)
     sentences_in_text = Rewriter.sentencesInText(rewr, text)
