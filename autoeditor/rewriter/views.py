@@ -29,6 +29,8 @@ class Rewriter:
             self.wordFileList.append(wordFileLine)
 
     def cleanedInput(self, dirtyInput):
+        allow = string.ascii_letters + string.digits + " " + "\n"
+        dirtyInput = re.sub('[^%s]' % allow, '', dirtyInput) # filter out non-alphanumeric characters
         return dirtyInput.lower()
 
 # Per-word operations
@@ -53,14 +55,11 @@ class Rewriter:
     def frequencyArrayOfWords(self, words):
         wordFrequencyArray = []
         for word in words:
-            allow = string.ascii_letters + string.digits
-            word = re.sub('[^%s]' % allow, '', word) # filter out non-alphanumeric characters
             wordFrequencyArray.append(self.wordFrequencyRank(word))
         return wordFrequencyArray
 
     def wordsInText(self, text):
-        text = text.replace(".", "")
-        return text.split(" ")
+        return re.findall(r"[\w']+", text)
 
     def syllableCountEstimateForWord(self, word):
         return 0
