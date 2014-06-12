@@ -97,28 +97,37 @@ def runrewriter(request):
         sentences_in_text = []
         rare_words = []
         unknown_words = []
+        highlighted_formatted_text = text
         if (request.POST['operation'] == "rareWords"):
             rare_words, unknown_words = Rewriter.analyzeWordRarityInText(rewr, text)
-            print("Rare Words")
-
         elif (request.POST['operation'] == "highlightSentences"):
             sentences_in_text = Rewriter.sentencesInText(rewr, text)
-            print("Highlight Sentences")
         else:
-            print("None of these")
+            print("Unexpected value in POST['operation']: " + request.POST['operation'])
 
+        # Add visual formatting for each rare word
+        for word in rare_words:
+            print("Replacing " + word)
+            highlighted_formatted_text = highlighted_formatted_text.replace(word, "<div class=\"b1\">" + word + "</div>")
+        for word in unknown_words:
+            print("Replacing " + word)
+            highlighted_formatted_text = highlighted_formatted_text.replace(word, "<div class=\"b0\">" + word + "</div>")
+
+        print(highlighted_formatted_text)
+
+        # Hand calculated text off to the template
         context = RequestContext(request, {
             'sentences_in_text': sentences_in_text,
             'rare_words': rare_words,
             'unknown_words': unknown_words,
-            'original_text': text
+            'original_text': text,
+            'highlighted_formatted_text': highlighted_formatted_text
         })
     else :
         # No text / initial load of page
 
         if len(text) <= 0:
-            text = 'This is default text. The following comes from an email exchange between myself and John Barnes, whose story I critiqued and who has given permission to reprint the exchange. I know that this question often comes up for newer writers. They see writers who write long, elaborate sentences and wonder why they then get criticized for overly long and complicated sentences. '
-
+            text = 'Those values are all pretty close together and thats another problem. If I take all pitchers that have at least 250 recorded pitches this season and average their Nasty Factors, the results go from a highest Nasty Factor of 48 (Mike MacDougal) to a low of 40 (Daniel Schlereth) and the standard deviation is a mere 1.4 points. Such a small spread makes me skeptical theres anything useful there to tease out.'
         context = RequestContext(request, {
             'sentences_in_text': [],
             'rare_words': [],

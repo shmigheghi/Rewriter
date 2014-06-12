@@ -2,17 +2,22 @@
 <html>
 <head>
     <title>Rewriter</title>
+    {% load staticfiles %}
+    <link rel="stylesheet" media="screen" href="{% static "rewriter/styling.css" %}" >
 </head>
 <body>
     {% if sentences_in_text %}
     <p>
-    Sentences in text:
-    {% for sentence in sentences_in_text %}
-         <li>{{ sentence }}</li>
-    {% endfor %}
+    Sentences in text:<br>
+    <textarea cols="80" rows="20" name="text">{% for sentence in sentences_in_text %}{{ sentence }}&#13;&#10;{% endfor %}</textarea><br>
     </p>
     {% endif %}
     {% if not sentences_in_text %}
+    <p>
+    Highlighted text:<br>
+    {{ highlighted_formatted_text |safe }}
+    {% for word in highlighted_formatted_text %}{{ word }}{% endfor %}<br>
+    </p>
     Rare words:
     {% for rword in rare_words %}
          <li>{{ rword }}</li>
@@ -25,12 +30,16 @@
     </p>
     {% endif %}
     <p>
-    <form action="" method="POST">
-        {% csrf_token %}
-    <input type="radio" name="operation" value="rareWords"{% if not sentences_in_text %} checked{% endif %}>Rare Words<br>
-    <input type="radio" name="operation" value="highlightSentences"{% if sentences_in_text %} checked{% endif %}>Highlight Sentences<br>
-    <textarea cols="80" rows="20" name="text">{{ original_text }}</textarea>
+    <form class="form" action="" method="POST">
+    {% csrf_token %}
+    <div>
+    <div><input type="radio" name="operation" id="radio1" class="radio" value="rareWords"{% if not sentences_in_text %} checked{% endif %} /><label for="radio1">Rare Words</label></div>
+    <div><input type="radio" name="operation" id="radio2" class="radio" value="highlightSentences"{% if sentences_in_text %} checked{% endif %}><label for="radio2">Highlight Sentences</label></div>
+    </div>
+    <div>
+    <textarea cols="80" rows="20" name="text">{{ original_text }}</textarea><br>
     <input type="submit" value="Analyze" />
+    </div>
     </form>
     </p>
 </body>
