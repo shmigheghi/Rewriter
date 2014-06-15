@@ -97,7 +97,8 @@ def runrewriter(request):
         sentences_in_text = []
         rare_words = []
         unknown_words = []
-        highlighted_formatted_text = text
+        highlighted_formatted_text = ""
+        words_in_text = rewr.wordsInText(text)
         if (request.POST['operation'] == "rareWords"):
             rare_words, unknown_words = Rewriter.analyzeWordRarityInText(rewr, text)
         elif (request.POST['operation'] == "highlightSentences"):
@@ -106,13 +107,14 @@ def runrewriter(request):
             print("Unexpected value in POST['operation']: " + request.POST['operation'])
 
         # Add visual formatting for each rare word
-        for word in rare_words:
-            print("Replacing " + word)
-            highlighted_formatted_text = highlighted_formatted_text.replace(word, "<span class=\"b1\">" + word + "</span>")
-        for word in unknown_words:
-            print("Replacing " + word)
-            highlighted_formatted_text = highlighted_formatted_text.replace(word, "<span class=\"b0\">" + word + "</span>")
-
+        for word in words_in_text:
+            if word in rare_words:
+                highlighted_formatted_text += "<span class=\"b1\">" + word + "</span>"
+            elif word in unknown_words:
+                highlighted_formatted_text += "<span class=\"b0\">" + word + "</span>"
+            else:
+                highlighted_formatted_text += word
+            highlighted_formatted_text += " "
         print(highlighted_formatted_text)
 
         # Hand calculated text off to the template
