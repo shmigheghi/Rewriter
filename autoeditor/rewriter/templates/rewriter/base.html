@@ -6,41 +6,41 @@
     <link rel="stylesheet" media="screen" href="{% static "rewriter/styling.css" %}" >
 </head>
 <body>
+<div class="page">
     {% if sentences_in_text %}
-    <p>
+    <div class="results" id="sentences">
     Sentences in text:<br>
     <textarea cols="80" rows="20" name="text">{% for sentence in sentences_in_text %}{{ sentence }}&#13;&#10;{% endfor %}</textarea><br>
-    </p>
+    </div>
     {% endif %}
     {% if not sentences_in_text %}
-    <p>
+    <div class="results" id="rarewords">
     Highlighted text:<br>
-    {{ highlighted_formatted_text |safe }}
-    {% for word in highlighted_formatted_text %}{{ word }}{% endfor %}<br>
-    </p>
+    {{ highlighted_formatted_text|safe|escape }}
+    </div>
     Rare words:
     {% for rword in rare_words %}
-         <li>{{ rword }}</li>
+         <br/>{{ rword }}
     {% endfor %}
-    <p>
+    <div class="results" id="unknownwords">
     Unknown words:
     {% for uword in unknown_words %}
-         <li>{{ uword }}</li>
+         <br/>{{ uword }}
     {% endfor %}
-    </p>
+    </div>
     {% endif %}
-    <p>
-    <form class="form" action="" method="POST">
+    <div class="form" id="formentry">
+    <form id="textEntryForm" action="" method="POST">
     {% csrf_token %}
     <div>
-    <div><input type="radio" name="operation" id="radio1" class="radio" value="rareWords"{% if not sentences_in_text %} checked{% endif %} /><label for="radio1">Rare Words</label></div>
-    <div><input type="radio" name="operation" id="radio2" class="radio" value="highlightSentences"{% if sentences_in_text %} checked{% endif %}><label for="radio2">Highlight Sentences</label></div>
+    <input type="radio" name="operation" id="radio1" class="radio" value="rareWords"{% if not sentences_in_text %} checked{% endif %}>Rare Words
+    <input type="radio" name="operation" id="radio2" class="radio" value="highlightSentences"{% if sentences_in_text %} checked{% endif %}>Highlight Sentences
     </div>
     <div>
     <textarea cols="80" rows="20" name="text">{{ original_text }}</textarea><br>
     <input type="submit" value="Analyze" />
     </div>
     </form>
-    </p>
+</div>
 </body>
 </html>

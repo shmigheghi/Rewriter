@@ -108,10 +108,10 @@ def runrewriter(request):
         # Add visual formatting for each rare word
         for word in rare_words:
             print("Replacing " + word)
-            highlighted_formatted_text = highlighted_formatted_text.replace(word, "<div class=\"b1\">" + word + "</div>")
+            highlighted_formatted_text = highlighted_formatted_text.replace(word, "<span class=\"b1\">" + word + "</span>")
         for word in unknown_words:
             print("Replacing " + word)
-            highlighted_formatted_text = highlighted_formatted_text.replace(word, "<div class=\"b0\">" + word + "</div>")
+            highlighted_formatted_text = highlighted_formatted_text.replace(word, "<span class=\"b0\">" + word + "</span>")
 
         print(highlighted_formatted_text)
 
