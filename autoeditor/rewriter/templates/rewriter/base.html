@@ -13,7 +13,13 @@
     <textarea cols="80" rows="20" name="text">{% for sentence in sentences_in_text %}{{ sentence }}&#13;&#10;{% endfor %}</textarea><br>
     </div>
     {% endif %}
-    {% if not sentences_in_text %}
+    {% if flesch_kincaid_grade %}
+    <div class="results" id="fkGradeLevel">
+    Flesch-Kincaid Grade Level: {{ flesch_kincaid_grade }}<br>
+    {{ original_text }}
+    </div>
+    {% endif %}
+    {% if rare_words %}
     <div class="results" id="rarewords">
     Highlighted text:<br>
     {{ highlighted_formatted_text|safe|escape }}
@@ -33,7 +39,8 @@
     <form id="textEntryForm" action="" method="POST">
     {% csrf_token %}
     <div>
-    <input type="radio" name="operation" id="radio1" class="radio" value="rareWords"{% if not sentences_in_text %} checked{% endif %}>Rare Words
+    <input type="radio" name="operation" id="radio1" class="radio" value="rareWords"{% if rare_words %} checked{% endif %}>Rare Words
+    <input type="radio" name="operation" id="radio2" class="radio" value="fkGradeLevel"{% if flesch_kincaid_grade %} checked{% endif %}>Flesch-Kincaid Grade Level
     <input type="radio" name="operation" id="radio2" class="radio" value="highlightSentences"{% if sentences_in_text %} checked{% endif %}>Highlight Sentences
     </div>
     <div>

@@ -14,10 +14,19 @@ class Rewriter:
         module_dir = os.path.dirname(__file__)  # get current directory
         file_path = os.path.join(module_dir, 'static/rewriter/wordsInOrder.txt')
         self.wordFile = open(file_path, 'r')
-
         self.wordFileContents = self.wordFile.read()
         self.wordFileList = []
         self.rareWordCutoff = 25000
+
+        syllable_file_path = os.path.join(module_dir, 'static/rewriter/mhyph.txt')
+        self.syllableFile = open(syllable_file_path, 'r', encoding="ISO-8859-1")
+        self.syllableFileContents = self.syllableFile.read()
+        self.syllableFileList = []
+
+        no_hyphen_syllable_file_path = os.path.join(module_dir, 'static/rewriter/mhyphnohyphens.txt')
+        self.no_hyphensyllableFile = open(no_hyphen_syllable_file_path, 'r')
+        self.no_hyphensyllableFileContents = self.no_hyphensyllableFile.read()
+        self.no_hyphensyllableFileList = []
 
         self.prepWords()
 
@@ -27,6 +36,14 @@ class Rewriter:
         wordFileLines = self.wordFileContents.split("\n")
         for index, wordFileLine in enumerate(wordFileLines):
             self.wordFileList.append(wordFileLine)
+
+        syllableFileLines = self.syllableFileContents.split("\n")
+        for index, syllableFileLine in enumerate(syllableFileLines):
+            self.syllableFileList.append(syllableFileLine)
+
+        no_hyphensyllableFileLines = self.no_hyphensyllableFileContents.split("\n")
+        for index, no_hyphensyllableFileLine in enumerate(no_hyphensyllableFileLines):
+            self.no_hyphensyllableFileList.append(no_hyphensyllableFileLine)
 
     def cleanedInput(self, dirtyInput):
         allow = string.ascii_letters + string.digits + " " + "\n"
@@ -61,8 +78,28 @@ class Rewriter:
     def wordsInText(self, text):
         return re.findall(r"[\w']+", text)
 
-    def syllableCountEstimateForWord(self, word):
-        return 0
+    def syllableCountForWord(self, word):
+        try:
+            syllableIndex = self.no_hyphensyllableFileList.index(word.lower())
+            if syllableIndex > -1:
+                syllableContainingWord = self.syllableFileList[syllableIndex]
+                print("Word: "+ word)
+                print("Syll word: "+ syllableContainingWord)
+                print("Len 1: % d Len 2: % d", len(word), len(syllableContainingWord))
+                syllableCount = 1
+                processingLetters = True
+                for letter in syllableContainingWord:
+                    if letter.isalpha() and not processingLetters:
+                        syllableCount += 1
+                        processingLetters = True
+                    elif not letter.isalpha():
+                        processingLetters = False
+                return syllableCount
+        except ValueError: # Word not present in no_hyphen list
+            return len(word) // 3 # guesstimate, needs improvement. Many words are missing like 'values' from the list
+
+    def stringCompIgnoringSpecialChars(self, a, b):
+        return [c for c in a if c.isalpha()] == [c for c in b if c.isalpha()]
 
 # Per-sentence operations
 
@@ -84,6 +121,19 @@ class Rewriter:
 
         return rareWords, unknownWords
 
+    def fleschKincaidGradeLevelForText(self, text):
+        wordsInText = self.wordsInText(text)
+        totalSentences = len(self.sentencesInText(text))
+        totalWords = len(wordsInText)
+
+        totalSyllables = 0
+        for word in wordsInText:
+            totalSyllables += self.syllableCountForWord(word)
+            print(str(totalSyllables) + " syllables so far")
+        print("Syllables: "+ str(totalSyllables))
+        fkGradeLevel = 0.39 * (totalWords / totalSentences) + 11.8 * (totalSyllables / totalWords) - 15.59
+
+        return fkGradeLevel
 
 def index(request):
     return HttpResponse("Hello, world. You're at the rewriter index.")
@@ -97,12 +147,18 @@ def runrewriter(request):
         sentences_in_text = []
         rare_words = []
         unknown_words = []
+        grade_level_sentences = []
         highlighted_formatted_text = ""
+        fkGrade = ""
         words_in_text = rewr.wordsInText(text)
         if (request.POST['operation'] == "rareWords"):
             rare_words, unknown_words = Rewriter.analyzeWordRarityInText(rewr, text)
         elif (request.POST['operation'] == "highlightSentences"):
             sentences_in_text = Rewriter.sentencesInText(rewr, text)
+        elif (request.POST['operation'] == "fkGradeLevel"):
+            # grade_level_sentences = Rewriter.gradeLevelForSentences(rewr, text)
+            fkGrade = Rewriter.fleschKincaidGradeLevelForText(rewr, text)
+            print("F-K Grade: "+ str(fkGrade))
         else:
             print("Unexpected value in POST['operation']: " + request.POST['operation'])
 
@@ -123,6 +179,8 @@ def runrewriter(request):
             'rare_words': rare_words,
             'unknown_words': unknown_words,
             'original_text': text,
+            'grade_level_sentences': grade_level_sentences,
+            'flesch_kincaid_grade': str(fkGrade),
             'highlighted_formatted_text': highlighted_formatted_text
         })
     else :
@@ -134,6 +192,8 @@ def runrewriter(request):
             'sentences_in_text': [],
             'rare_words': [],
             'unknown_words': [],
+            'grade_level_sentences': [],
+            'flesch_kincaid_grade': "",
             'original_text': text
         })
 
