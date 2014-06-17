@@ -7,6 +7,12 @@
 </head>
 <body>
 <div class="page">
+    {% if error_text %}
+    <div class="results" id="errortext">
+    Error: {{ error_text }}<br>
+    {{ original_text }}
+    </div>
+    {% endif %}
     {% if sentences_in_text %}
     <div class="results" id="sentences">
     Sentences in text:<br>

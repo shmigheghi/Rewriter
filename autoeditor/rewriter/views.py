@@ -13,37 +13,29 @@ class Rewriter:
     def __init__(self):
         module_dir = os.path.dirname(__file__)  # get current directory
         file_path = os.path.join(module_dir, 'static/rewriter/wordsInOrder.txt')
-        self.wordFile = open(file_path, 'r')
-        self.wordFileContents = self.wordFile.read()
-        self.wordFileList = []
+        wordFile = open(file_path, 'r')
+        wordFileContents = wordFile.read()
+        self.wordFileList = self.wordListFromFileContents(wordFileContents)
         self.rareWordCutoff = 25000
 
         syllable_file_path = os.path.join(module_dir, 'static/rewriter/mhyph.txt')
-        self.syllableFile = open(syllable_file_path, 'r', encoding="ISO-8859-1")
-        self.syllableFileContents = self.syllableFile.read()
-        self.syllableFileList = []
+        syllableFile = open(syllable_file_path, 'r', encoding="ISO-8859-1")
+        syllableFileContents = syllableFile.read()
+        self.syllableFileList = self.wordListFromFileContents(syllableFileContents)
 
         no_hyphen_syllable_file_path = os.path.join(module_dir, 'static/rewriter/mhyphnohyphens.txt')
-        self.no_hyphensyllableFile = open(no_hyphen_syllable_file_path, 'r')
-        self.no_hyphensyllableFileContents = self.no_hyphensyllableFile.read()
-        self.no_hyphensyllableFileList = []
+        no_hyphen_syllableFile = open(no_hyphen_syllable_file_path, 'r')
+        no_hyphen_syllableFileContents = no_hyphen_syllableFile.read()
+        self.no_hyphen_syllableFileList = self.wordListFromFileContents(no_hyphen_syllableFileContents)
 
-        self.prepWords()
+    def wordListFromFileContents(self, fileContents):
+        wordFileList = [];
+        wordFileLines = fileContents.split("\n")
+        for index, wordFileLine in enumerate(wordFileLines):
+            wordFileList.append(wordFileLine)
+        return wordFileList
 
 # prep
-
-    def prepWords(self):
-        wordFileLines = self.wordFileContents.split("\n")
-        for index, wordFileLine in enumerate(wordFileLines):
-            self.wordFileList.append(wordFileLine)
-
-        syllableFileLines = self.syllableFileContents.split("\n")
-        for index, syllableFileLine in enumerate(syllableFileLines):
-            self.syllableFileList.append(syllableFileLine)
-
-        no_hyphensyllableFileLines = self.no_hyphensyllableFileContents.split("\n")
-        for index, no_hyphensyllableFileLine in enumerate(no_hyphensyllableFileLines):
-            self.no_hyphensyllableFileList.append(no_hyphensyllableFileLine)
 
     def cleanedInput(self, dirtyInput):
         allow = string.ascii_letters + string.digits + " " + "\n"
@@ -80,7 +72,7 @@ class Rewriter:
 
     def syllableCountForWord(self, word):
         try:
-            syllableIndex = self.no_hyphensyllableFileList.index(word.lower())
+            syllableIndex = self.no_hyphen_syllableFileList.index(word.lower())
             if syllableIndex > -1:
                 syllableContainingWord = self.syllableFileList[syllableIndex]
                 print("Word: "+ word)
@@ -150,17 +142,21 @@ def runrewriter(request):
         grade_level_sentences = []
         highlighted_formatted_text = ""
         fkGrade = ""
+        error_text = ''
         words_in_text = rewr.wordsInText(text)
-        if (request.POST['operation'] == "rareWords"):
+        operationValue = request.POST.get('operation', '')
+        if (operationValue == "rareWords"):
             rare_words, unknown_words = Rewriter.analyzeWordRarityInText(rewr, text)
-        elif (request.POST['operation'] == "highlightSentences"):
+        elif (operationValue == "highlightSentences"):
             sentences_in_text = Rewriter.sentencesInText(rewr, text)
-        elif (request.POST['operation'] == "fkGradeLevel"):
+        elif (operationValue == "fkGradeLevel"):
             # grade_level_sentences = Rewriter.gradeLevelForSentences(rewr, text)
             fkGrade = Rewriter.fleschKincaidGradeLevelForText(rewr, text)
             print("F-K Grade: "+ str(fkGrade))
+        elif (operationValue == ''):
+            error_text = "No operation selected " + operationValue
         else:
-            print("Unexpected value in POST['operation']: " + request.POST['operation'])
+            error_text = "Unexpected operation value: " + operationValue
 
         # Add visual formatting for each rare word
         for word in words_in_text:
@@ -181,7 +177,8 @@ def runrewriter(request):
             'original_text': text,
             'grade_level_sentences': grade_level_sentences,
             'flesch_kincaid_grade': str(fkGrade),
-            'highlighted_formatted_text': highlighted_formatted_text
+            'highlighted_formatted_text': highlighted_formatted_text,
+            'error_text': error_text
         })
     else :
         # No text / initial load of page
@@ -193,8 +190,9 @@ def runrewriter(request):
             'rare_words': [],
             'unknown_words': [],
             'grade_level_sentences': [],
-            'flesch_kincaid_grade': "",
-            'original_text': text
+            'flesch_kincaid_grade': '',
+            'original_text': text,
+            'error_text': ''
         })
 
     return HttpResponse(template.render(context));
