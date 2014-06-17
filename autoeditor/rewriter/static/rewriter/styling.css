@@ -86,39 +86,69 @@ button.submit:active {
 
 }
 
-/* Highlighting. Unknown at 0, then common -> rare */
+/* Highlighting. Unknown at b0, then common -> rare. Needs more categories, up to b10 */
 
-.b0 {
+.bu {
     background-color: #DA81F5;
 	color: #FFFFFF;
 }
+/*
+.b0 {
+    background-color: #9AFE2E;
+	color: #FFFFFF;
+}
+*/
+.b0 {
+    background-color: #FFFFFF;
+	color: #000000;
+}
 
 .b1 {
-    background-color: #9FF781;
-	color: #FFFFFF;
+    background-color: #C8FE2E;
+	color: #000000;
 }
 
 .b2 {
-    background-color: #F3F781;
-	color: #FFFFFF;
+    background-color: #F7FE2E;
+	color: #000000;
 }
 
 .b3 {
-    background-color: #F5DA81;
-	color: #FFFFFF;
+    background-color: #FACC2E;
+	color: #000000;
 }
 
 .b4 {
-    background-color: #F7BE81;
-	color: #FFFFFF;
+    background-color: #FE9A2E;
+	color: #000000;
 }
 
 .b5 {
-    background-color: #F79F81;
+    background-color: #FE9A2E;
 	color: #FFFFFF;
 }
 
 .b6 {
-    background-color: #F78181;
+    background-color: #FE2E2E;
+	color: #FFFFFF;
+}
+
+.b7 {
+    background-color: #DF0101;
+	color: #FFFFFF;
+}
+
+.b8 {
+    background-color: #B40404;
+	color: #FFFFFF;
+}
+
+.b9 {
+    background-color: #8A0808;
+	color: #FFFFFF;
+}
+
+.b10 {
+    background-color: #610B0B ;
 	color: #FFFFFF;
 }

@@ -17,6 +17,7 @@ class Rewriter:
         wordFileContents = wordFile.read()
         self.wordFileList = self.wordListFromFileContents(wordFileContents)
         self.rareWordCutoff = 25000
+        self.rareWordStratuses = 10 # how many buckets to classify word rarity
 
         syllable_file_path = os.path.join(module_dir, 'static/rewriter/mhyph.txt')
         syllableFile = open(syllable_file_path, 'r', encoding="ISO-8859-1")
@@ -54,12 +55,22 @@ class Rewriter:
     def getRareWords(self, wordArray, wordFrequencyArray):
         rareWords = []
         unknownWords = []
+        rareWordStratusArrays = []
+
+        for index in range(0, self.rareWordStratuses): # setup stratuses
+            rareWordStratusArrays.append([])
+
+        wordsPerStratus = len(self.wordFileList) // self.rareWordStratuses
         for index, wordFrequencyValue in enumerate(wordFrequencyArray):
+            word = wordArray[index]
             if wordFrequencyValue > self.rareWordCutoff and wordFrequencyValue > -1:
-                rareWords.append(wordArray[index])
+                rareWords.append(word)
             elif wordFrequencyValue == -1:
-                unknownWords.append(wordArray[index])
-        return rareWords, unknownWords
+                unknownWords.append(word)
+            stratus = wordFrequencyValue // wordsPerStratus
+            rareWordStratusArrays[stratus].append(word)
+
+        return rareWords, unknownWords, rareWordStratusArrays
 
     def frequencyArrayOfWords(self, words):
         wordFrequencyArray = []
@@ -109,9 +120,9 @@ class Rewriter:
         wordFrequencyArray = self.frequencyArrayOfWords(wordArray)
 
         # Calculate rare words
-        rareWords, unknownWords = self.getRareWords(wordArray, wordFrequencyArray)
+        rareWords, unknownWords, rareWordStratusArrays = self.getRareWords(wordArray, wordFrequencyArray)
 
-        return rareWords, unknownWords
+        return rareWords, unknownWords, rareWordStratusArrays
 
     def fleschKincaidGradeLevelForText(self, text):
         wordsInText = self.wordsInText(text)
@@ -135,6 +146,7 @@ def runrewriter(request):
     rewr = Rewriter()
     text = ""
     if (request.POST):
+
         text = request.POST['text']
         sentences_in_text = []
         rare_words = []
@@ -143,10 +155,12 @@ def runrewriter(request):
         highlighted_formatted_text = ""
         fkGrade = ""
         error_text = ''
+        rareWordStratusArrays = []
         words_in_text = rewr.wordsInText(text)
+
         operationValue = request.POST.get('operation', '')
         if (operationValue == "rareWords"):
-            rare_words, unknown_words = Rewriter.analyzeWordRarityInText(rewr, text)
+            rare_words, unknown_words, rareWordStratusArrays = Rewriter.analyzeWordRarityInText(rewr, text)
         elif (operationValue == "highlightSentences"):
             sentences_in_text = Rewriter.sentencesInText(rewr, text)
         elif (operationValue == "fkGradeLevel"):
@@ -160,12 +174,17 @@ def runrewriter(request):
 
         # Add visual formatting for each rare word
         for word in words_in_text:
-            if word in rare_words:
-                highlighted_formatted_text += "<span class=\"b1\">" + word + "</span>"
-            elif word in unknown_words:
-                highlighted_formatted_text += "<span class=\"b0\">" + word + "</span>"
+            if word in unknown_words:
+                    highlighted_formatted_text += "<span class=\"bu\">" + word + "</span>"
             else:
-                highlighted_formatted_text += word
+                found = False
+                for index, stratus in enumerate(rareWordStratusArrays):
+                   if rewr.cleanedInput(word) in stratus:
+                       highlighted_formatted_text += "<span class=\"b" + str(index) + "\">" + word + "</span>"
+                       found = True
+                       break
+                if not found:
+                    highlighted_formatted_text += word
             highlighted_formatted_text += " "
         print(highlighted_formatted_text)
 
