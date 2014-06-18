@@ -17,7 +17,6 @@ class Rewriter:
         wordFileContents = wordFile.read()
         self.wordFileList = self.wordListFromFileContents(wordFileContents)
         self.rareWordCutoff = 25000
-        self.rareWordStratuses = 10 # how many buckets to classify word rarity
 
         syllable_file_path = os.path.join(module_dir, 'static/rewriter/mhyph.txt')
         syllableFile = open(syllable_file_path, 'r', encoding="ISO-8859-1")
@@ -55,20 +54,27 @@ class Rewriter:
     def getRareWords(self, wordArray, wordFrequencyArray):
         rareWords = []
         unknownWords = []
-        rareWordStratusArrays = []
+        rareWordStratusArrays = [[], [], [], []] # three stratuses, and a bucket for the words not in the word list
 
-        for index in range(0, self.rareWordStratuses): # setup stratuses
-            rareWordStratusArrays.append([])
+        cutoffOne = 5000
+        cutoffTwo = 20000
+        cutoffThree = 40000
 
-        wordsPerStratus = len(self.wordFileList) // self.rareWordStratuses
         for index, wordFrequencyValue in enumerate(wordFrequencyArray):
             word = wordArray[index]
             if wordFrequencyValue > self.rareWordCutoff and wordFrequencyValue > -1:
                 rareWords.append(word)
             elif wordFrequencyValue == -1:
                 unknownWords.append(word)
-            stratus = wordFrequencyValue // wordsPerStratus
-            rareWordStratusArrays[stratus].append(word)
+
+            if wordFrequencyValue == -1:
+                rareWordStratusArrays[3].append(word)
+            elif wordFrequencyValue < cutoffOne:
+                rareWordStratusArrays[0].append(word)
+            elif wordFrequencyValue < cutoffTwo:
+                rareWordStratusArrays[1].append(word)
+            elif wordFrequencyValue < cutoffThree:
+                rareWordStratusArrays[2].append(word)
 
         return rareWords, unknownWords, rareWordStratusArrays
 
