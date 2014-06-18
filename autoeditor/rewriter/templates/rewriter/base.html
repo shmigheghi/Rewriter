@@ -6,6 +6,9 @@
     <link rel="stylesheet" media="screen" href="{% static "rewriter/styling.css" %}" >
 </head>
 <body>
+<div class="header">
+    <div class="titlebar">Plain English</div>
+</div>
 <div class="page">
     {% if error_text %}
     <div class="results" id="errortext">
@@ -13,18 +16,21 @@
     {{ original_text }}
     </div>
     {% endif %}
+
     {% if sentences_in_text %}
     <div class="results" id="sentences">
     Sentences in text:<br>
     <textarea cols="80" rows="20" name="text">{% for sentence in sentences_in_text %}{{ sentence }}&#13;&#10;{% endfor %}</textarea><br>
     </div>
     {% endif %}
+
     {% if flesch_kincaid_grade %}
     <div class="results" id="fkGradeLevel">
     Flesch-Kincaid Grade Level: {{ flesch_kincaid_grade }}<br>
     {{ original_text }}
     </div>
     {% endif %}
+
     {% if rare_words %}
     <div class="results" id="rarewords">
     Highlighted text:<br>
@@ -47,6 +53,7 @@
     {% endfor %}
     </div>
     {% endif %}
+
     <div class="form" id="formentry">
     <form id="textEntryForm" action="" method="POST">
     {% csrf_token %}

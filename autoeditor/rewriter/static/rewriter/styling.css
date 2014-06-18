@@ -1,5 +1,18 @@
-body {font: 14px/21px "Lucida Sans", "Lucida Grande", "Lucida Sans Unicode", sans-serif;}
+body {font: 14px/21px "Lucida Sans", "Lucida Grande", "Lucida Sans Unicode", sans-serif; background-color:#F7DC9E;}
 .form h2, .form label {font-family:Georgia, Times, "Times New Roman", serif;}
+
+.header {
+    height:50px;
+    background:#64A0AB;
+    width:100%;
+    margin:20px auto;
+}
+
+.titlebar {
+    font: 30px "Lucida Sans", "Lucida Grande", "Lucida Sans Unicode", sans-serif;
+    text-align: center;
+    color: white;
+}
 
 .form input {
     padding:5px 8px;
@@ -88,22 +101,21 @@ button.submit:active {
 
 /* Highlighting. Unknown at b0, then common -> rare. Needs more categories, up to b10 */
 
-.bu {
-    background-color: #DA81F5;
-	color: #FFFFFF;
-}
-
 .b0 {
-    background-color: #FFFFFF;
-	color: #000000;
+
 }
 
 .b1 {
-    background-color: #F7FE2E;
-	color: #000000;
+    background-color: #9AB896;
+	color: #FFFFFF;
 }
 
 .b2 {
-    background-color: #DF0101;
+    background-color: #FC9F4C;
+	color: #FFFFFF;
+}
+
+.bu {
+    background-color: #EB3B45;
 	color: #FFFFFF;
 }
