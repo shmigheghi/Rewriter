@@ -30,6 +30,12 @@
     Highlighted text:<br>
     {{ highlighted_formatted_text|safe|escape }}
     </div>
+    <div class="key" id="key">
+    Key:<br/>
+    <p><span class="b1">Uncommon</span> - Try avoiding if writing for a very young audience.</p>
+    <p><span class="b2">Rare</span> - Careful, these words are found less often in writing.</p>
+    <p><span class="bu">Obscure</span> - Warning! Could be jargon.</p>
+    </div>
     Rare words:
     {% for rword in rare_words %}
          <br/>{{ rword }}
@@ -47,7 +53,7 @@
     <div>
     <input type="radio" name="operation" id="radio1" class="radio" value="rareWords"{% if rare_words %} checked{% endif %}>Rare Words
     <input type="radio" name="operation" id="radio2" class="radio" value="fkGradeLevel"{% if flesch_kincaid_grade %} checked{% endif %}>Flesch-Kincaid Grade Level
-    <input type="radio" name="operation" id="radio2" class="radio" value="highlightSentences"{% if sentences_in_text %} checked{% endif %}>Highlight Sentences
+    <input type="radio" name="operation" id="radio3" class="radio" value="highlightSentences"{% if sentences_in_text %} checked{% endif %}>Highlight Sentences
     </div>
     <div>
     <textarea cols="80" rows="20" name="text">{{ original_text }}</textarea><br>
