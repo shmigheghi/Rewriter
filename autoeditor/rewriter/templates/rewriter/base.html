@@ -27,7 +27,7 @@
     {% if flesch_kincaid_grade %}
     <div class="results" id="fkGradeLevel">
     Flesch-Kincaid Grade Level: {{ flesch_kincaid_grade }}<br>
-    {{ original_text }}
+    {{ grade_level_sentences_formatted|safe|escape }}
     </div>
     {% endif %}
 

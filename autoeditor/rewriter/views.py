@@ -92,9 +92,7 @@ class Rewriter:
             syllableIndex = self.no_hyphen_syllableFileList.index(word.lower())
             if syllableIndex > -1:
                 syllableContainingWord = self.syllableFileList[syllableIndex]
-                print("Word: "+ word)
-                print("Syll word: "+ syllableContainingWord)
-                print("Len 1: % d Len 2: % d", len(word), len(syllableContainingWord))
+                print("Word: "+ word + " Syll word: "+ syllableContainingWord)
                 syllableCount = 1
                 processingLetters = True
                 for letter in syllableContainingWord:
@@ -103,9 +101,11 @@ class Rewriter:
                         processingLetters = True
                     elif not letter.isalpha():
                         processingLetters = False
+                print("Syllable count: " + str(syllableCount))
                 return syllableCount
         except ValueError: # Word not present in no_hyphen list
-            return len(word) // 3 # guesstimate, needs improvement. Many words are missing like 'values' from the list
+            print("Can't find " + word + " in hyphen list")
+            return max(len(word) // 3, 1) # guesstimate, needs improvement. Many words are missing like 'values' from the list
 
     def stringCompIgnoringSpecialChars(self, a, b):
         return [c for c in a if c.isalpha()] == [c for c in b if c.isalpha()]
@@ -114,6 +114,17 @@ class Rewriter:
 
     def sentencesInText(self, text):
         return text.split(".")
+
+    def formattedSentencesByGradeLevel(self, text):
+        formattedText = ""
+        sentences = self.sentencesInText(text)
+        for sentence in sentences:
+            fkSentenceLevel = self.fleschKincaidGradeLevelForText(sentence)
+            fkAsInt = int(fkSentenceLevel)
+            fkBounded = max(min(15, fkAsInt), 1) # keeps the grade level from 1-15 for highlighting purposes
+            formattedText += "Level " + str(fkBounded) + ": <span class=\"fk" + str(fkBounded) + "\">" + sentence + "</span><br>"
+        return formattedText
+
 
 # High-level calculations
 
@@ -134,6 +145,8 @@ class Rewriter:
         wordsInText = self.wordsInText(text)
         totalSentences = len(self.sentencesInText(text))
         totalWords = len(wordsInText)
+        if totalWords == 0:
+            return 0
 
         totalSyllables = 0
         for word in wordsInText:
@@ -170,7 +183,7 @@ def runrewriter(request):
         elif (operationValue == "highlightSentences"):
             sentences_in_text = Rewriter.sentencesInText(rewr, text)
         elif (operationValue == "fkGradeLevel"):
-            # grade_level_sentences = Rewriter.gradeLevelForSentences(rewr, text)
+            grade_level_sentences = Rewriter.formattedSentencesByGradeLevel(rewr, text)
             fkGrade = Rewriter.fleschKincaidGradeLevelForText(rewr, text)
             print("F-K Grade: "+ str(fkGrade))
         elif (operationValue == ''):
@@ -200,7 +213,7 @@ def runrewriter(request):
             'rare_words': rare_words,
             'unknown_words': unknown_words,
             'original_text': text,
-            'grade_level_sentences': grade_level_sentences,
+            'grade_level_sentences_formatted': grade_level_sentences,
             'flesch_kincaid_grade': str(fkGrade),
             'highlighted_formatted_text': highlighted_formatted_text,
             'error_text': error_text
@@ -209,12 +222,12 @@ def runrewriter(request):
         # No text / initial load of page
 
         if len(text) <= 0:
-            text = 'Those values are all pretty close together and thats another problem. If I take all pitchers that have at least 250 recorded pitches this season and average their Nasty Factors, the results go from a highest Nasty Factor of 48 (Mike MacDougal) to a low of 40 (Daniel Schlereth) and the standard deviation is a mere 1.4 points. Such a small spread makes me skeptical theres anything useful there to tease out.'
+            text = "Losing two games against Boston isn't too surprising. However, losing by scores of 1-0 and 2-1 at Fenway Park is not what I'd have expected. The Twins have definitely done enough to win these games, but they just haven't been able to find any clutch hitting. No Oswaldo Arcia in the lineup today, as he's really been struggling lately. Also, we should expect some news either after the game or early tomorrow on who is being sent down to make room for Yohan Pino. The foregone conclusion has been that Mike Pelfrey will be placed on the 60-day disabled list, but the corresponding 25-man roster move is still unknown. Ron Gardenhire said it will be a pitcher, but no one has really been awful except Jared Burton. Would the Twins be bold enough to DFA him and save Pelfrey to the 60-day DL to make room for someone else? Kyle Gibson takes the mound for the Twins, and while his success has been a bit luck-aided this year, it's still nice to see him rebound from a tough rookie season. His 3.55 ERA is second on the team among starters thanks to a low .266 BABIP allowed, along with a nice 0.47 HR/9 (major league average is around 1.00). In spite of his low strikeout rate, he's put together a nice year so far. Opposing him on the mound is John Lackey, who has turned into the pitcher the Red Sox were expecting when they signed him back in 2010 from the Angels. Despite a rough 2011 and then missing 2012 because of Tommy John surgery, Lackey has returned to form from posting a career low walk rate, along with the best velocity of his career. The Twins may have some trouble avoiding the sweep today with him on the mound."
         context = RequestContext(request, {
             'sentences_in_text': [],
             'rare_words': [],
             'unknown_words': [],
-            'grade_level_sentences': [],
+            'grade_level_sentences_formatted': [],
             'flesch_kincaid_grade': '',
             'original_text': text,
             'error_text': ''
